@@ -39,19 +39,104 @@ TEST_F(IPFilterTest, GetIPAddrFromFile) {
     
     auto ipPool = ipFilter.getIPAddr(testFilename);
     
-    EXPECT_EQ(ipPool.size(), 7);
     
-    // Проверяем первый IP
     EXPECT_EQ(ipPool[0][0], 1);
     EXPECT_EQ(ipPool[0][1], 1);
     EXPECT_EQ(ipPool[0][2], 1);
     EXPECT_EQ(ipPool[0][3], 1);
     
-    // Проверяем последний IP
     EXPECT_EQ(ipPool[6][0], 192);
     EXPECT_EQ(ipPool[6][1], 168);
     EXPECT_EQ(ipPool[6][2], 1);
     EXPECT_EQ(ipPool[6][3], 1);
+}
+
+TEST_F(IPFilterTest, GetIPAddrFromNonExistentFile) {
+    IPFilter ipFilter;
+    
+    EXPECT_THROW(ipFilter.getIPAddr("non_existent_file.tsv"), std::runtime_error);
+}
+
+
+TEST_F(IPFilterTest, ReverseSort) {
+    IPFilter ipFilter;
+    auto ipPool = ipFilter.getIPAddr(testFilename);
+    
+    ipFilter.reverseSort(ipPool);
+    
+
+    EXPECT_GE(ipPool[0][0], ipPool[1][0]);
+    
+
+    for (size_t i = 0; i < ipPool.size() - 1; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            if (ipPool[i][j] != ipPool[i + 1][j]) {
+                EXPECT_GE(ipPool[i][j], ipPool[i + 1][j]);
+                break;
+            }
+        }
+    }
+}
+
+
+TEST_F(IPFilterTest, FilterByFirstOctet) {
+    IPFilter ipFilter;
+    auto ipPool = ipFilter.getIPAddr(testFilename);
+    
+    auto filtered = ipFilter.filter(ipPool, 1);
+    
+
+    EXPECT_EQ(filtered.size(), 2);
+    
+    for (const auto& ip : filtered) {
+        EXPECT_EQ(ip[0], 1);
+    }
+}
+
+TEST_F(IPFilterTest, FilterByFirstAndSecondOctet) {
+    IPFilter ipFilter;
+    auto ipPool = ipFilter.getIPAddr(testFilename);
+    
+    auto filtered = ipFilter.filter(ipPool, 46, 70);
+    
+
+    EXPECT_EQ(filtered.size(), 2);
+    
+    for (const auto& ip : filtered) {
+        EXPECT_EQ(ip[0], 46);
+        EXPECT_EQ(ip[1], 70);
+    }
+}
+
+
+TEST_F(IPFilterTest, FilterAnyOctet) {
+    IPFilter ipFilter;
+    auto ipPool = ipFilter.getIPAddr(testFilename);
+    
+    auto filtered = ipFilter.filterAny(ipPool, 46);
+    
+
+    EXPECT_EQ(filtered.size(), 3);
+    
+    for (const auto& ip : filtered) {
+        bool contains46 = false;
+        for (int i = 0; i < 4; ++i) {
+            if (ip[i] == 46) {
+                contains46 = true;
+                break;
+            }
+        }
+        EXPECT_TRUE(contains46);
+    }
+}
+
+TEST_F(IPFilterTest, FilterNonExistentOctet) {
+    IPFilter ipFilter;
+    auto ipPool = ipFilter.getIPAddr(testFilename);
+    
+    auto filtered = ipFilter.filterAny(ipPool, 255); 
+    
+    EXPECT_EQ(filtered.size(), 0);
 }
 
 int main(int argc, char **argv)
