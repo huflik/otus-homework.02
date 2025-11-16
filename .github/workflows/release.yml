@@ -28,7 +28,7 @@ jobs:
           sudo cmake CMakeLists.txt
           sudo make
           sudo cp lib/*.a /usr/lib
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }} -DWITH_BOOST_TEST=ON -DWITH_GTEST=ON 
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }} -DWITH_GTEST=ON 
       #----------------------------
       - run: cmake --build .
       - run: cmake --build . --target test
