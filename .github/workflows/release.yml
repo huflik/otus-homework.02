@@ -22,6 +22,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake build-essential libgtest-dev
 
+      - run: |
+          # Компилируем и устанавливаем GTest
+          cd /usr/src/gtest
+          sudo cmake CMakeLists.txt
+          sudo make
+          sudo cp lib/*.a /usr/lib
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }} -DWITH_GTEST=ON 
       #----------------------------
       - run: cmake --build .
       - run: cmake --build . --target test
