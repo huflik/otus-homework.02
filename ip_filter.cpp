@@ -1,4 +1,4 @@
-#include "ip_filter.h"
+#include "ip_filter.h" 
 
 std::array<uint8_t, octetNum> IPFilter::parserIPLine(const std::string& line) {
     std::array<uint8_t, octetNum> ip{};
