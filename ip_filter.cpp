@@ -1,67 +1,47 @@
 #include "ip_filter.h"
-#include "cin_redirect.h"
 
-std::vector<std::string> IPFilter::split(const std::string &str, char d)
-{
-    std::vector<std::string> r;
-
-    std::string::size_type start = 0;
-    std::string::size_type stop = str.find_first_of(d);
-    while(stop != std::string::npos)
-    {
-        r.push_back(str.substr(start, stop - start));
-
-        start = stop + 1;
-        stop = str.find_first_of(d, start);
-    }
-
-    r.push_back(str.substr(start));
-
-    return r;
-}
-
-IPAddrPool IPFilter::getIPAddr(const std::string& filename) {
-
-    IPAddrPool ipPool{};
-
-    CinRedirect redirect(filename);
-
-    for(std::string line; std::getline(std::cin, line);)
-    {
-        auto dataLine = split(line, '\t');
-        if(dataLine.size() == 0) {
-            throw std::runtime_error("Invalid line format: " + line);
-        }
-
-        auto strOctet = split(dataLine.at(0), '.');
-        if(strOctet.size() != octetNum) {
-            throw std::runtime_error("Invalid IP Address format: " + dataLine.at(0));
-        }
-
-
-        std::array<uint8_t, octetNum> bOctet{};
-        for(size_t i = 0; i < octetNum; ++i) {
-          
-            int octet;
-
-            auto[ptr, ec] = std::from_chars(strOctet[i].data(), strOctet[i].data() + strOctet[i].size(), octet);
-
-            if(ec == std::errc::invalid_argument) {
-                throw std::invalid_argument("Invalid octet format");
-            }
-
-            if(octet < std::numeric_limits<uint8_t>::min() || octet > std::numeric_limits<uint8_t>::max()) {
-                throw std::invalid_argument("Octet out of range");
-            }
-
-            bOctet[i] = static_cast<uint8_t>(octet);           
-               
-        }
-
-        ipPool.emplace_back(bOctet);
-
+std::array<uint8_t, OctetNum> IPFilter::parserIPLine(const std::string& line) {
+    std::array<uint8_t, OctetNum> ip{};
+    std::istringstream iss(line);
+    std::string octet;
+    
+    if (!std::getline(iss, dataLine '\t')) {
+        throw std::runtime_error("Invalid line format");
     }
     
+    std::istringstream ipStream(dataLine);
+    int byte;
+    
+    for (int i = 0; i < OctetNum; ++i) {
+        if (!(ipStream >> byte) numeric_limits<uint8_t>::min() || octet > std::numeric_limits<uint8_t>::max() {
+            throw std::runtime_error("Invalid octet");
+        }
+        ip[i] = static_cast<uint8_t>(byte);
+        
+        if (i < OctetNum) {
+            ipStream.ignore(1, '.');
+            if (ipStream.fail()) {
+                throw std::runtime_error("Invalid IP Address format: " + dataLine");
+            }
+        }
+    }
+    return ip;
+}
+
+IPAddrPool IPFilter::getIPAddr(std::istream& input) {
+
+    IPAddrPool ipPool{};
+    std::string line;
+
+    while (std::getline(input, line)) {        
+        try {
+            auto ip = parserIPLine(line);
+            ipPool.emplace_back(ip);
+        } catch (const std::exception& e) {
+            throw std::runtime_error("Error parsing IPAddr: '" + line + "' - " + e.what());
+        }
+    }
+        
     return ipPool;
 }
 
