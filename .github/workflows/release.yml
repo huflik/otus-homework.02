@@ -5,9 +5,11 @@ on:
     branches:
       - v2
       - feature/github_actions
-
+env:
+  DISABLED: true
 jobs:
   build:
+    if: env.DISABLED != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
