@@ -47,7 +47,7 @@ IPAddrPool IPFilter::getIPAddr(std::istream& input) {
 void IPFilter::reverseSort(IPAddrPool& ipPool) {   
     using IPAddr = std::array<uint8_t, octetNum>;
     
-    std:sort(ipPool.begin(), ipPool.end(), [](const IPAddr& lhs, const IPAddr& rhs) {return lhs > rhs;});
+    std::sort(ipPool.begin(), ipPool.end(), [](const IPAddr& lhs, const IPAddr& rhs) {return lhs > rhs;});
 }
 
 IPAddrPool IPFilter::filterAny(const IPAddrPool& ipPool, uint8_t searchIP) {
