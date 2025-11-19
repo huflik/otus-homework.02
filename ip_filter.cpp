@@ -29,7 +29,6 @@ std::array<uint8_t, octetNum> IPFilter::parserIPLine(const std::string& line) {
 }
 
 IPAddrPool IPFilter::getIPAddr(std::istream& input) {
-
     IPAddrPool ipPool{};
     std::string line;
 
@@ -45,15 +44,13 @@ IPAddrPool IPFilter::getIPAddr(std::istream& input) {
     return ipPool;
 }
 
-void IPFilter::reverseSort(IPAddrPool& ipPool) {
-   
+void IPFilter::reverseSort(IPAddrPool& ipPool) {   
     using IPAddr = std::array<uint8_t, octetNum>;
     
     std:sort(ipPool.begin(), ipPool.end(), [](const IPAddr& lhs, const IPAddr& rhs) {return lhs > rhs;});
 }
 
 IPAddrPool IPFilter::filterAny(const IPAddrPool& ipPool, uint8_t searchIP) {
-    
     IPAddrPool resultPool{};
 
     for(const auto& ip : ipPool) {
