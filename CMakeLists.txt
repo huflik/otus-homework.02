@@ -71,6 +71,11 @@ if(UNIX AND NOT APPLE)
     include(CPack)
 endif()
 
+if(BUILD_TESTS)
+    enable_testing()
+    add_test(test_ip_filter test_ip_filter)
+endif()
+
 # Информация о конфигурации
 message(STATUS "IP Filter Project Configuration:")
 message(STATUS "  Version: ${PROJECT_VERSION}")
