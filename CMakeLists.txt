@@ -9,7 +9,6 @@ option(WITH_GTEST "Whether to build Google Test" ON)
 
 add_executable(${PROJECT_NAME} 
     main.cpp
-    cin_redirect.cpp
     ip_filter.cpp
 )
 
@@ -39,8 +38,7 @@ if(WITH_GTEST)
     
     add_executable(test_ip_filter 
         test_ip_filter.cpp
-        ip_filter.cpp           
-        cin_redirect.cpp        
+        ip_filter.cpp                
     )
     
     set_target_properties(test_ip_filter PROPERTIES
