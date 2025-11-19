@@ -5,7 +5,7 @@ std::array<uint8_t, octetNum> IPFilter::parserIPLine(const std::string& line) {
     std::istringstream iss(line);
     std::string dataLine;
     
-    if (!std::getline(iss, dataLine '\t')) {
+    if (!std::getline(iss, dataLine, '\t')) {
         throw std::runtime_error("Invalid line format");
     }
     
