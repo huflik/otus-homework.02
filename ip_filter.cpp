@@ -1,9 +1,9 @@
 #include "ip_filter.h"
 
-std::array<uint8_t, OctetNum> IPFilter::parserIPLine(const std::string& line) {
-    std::array<uint8_t, OctetNum> ip{};
+std::array<uint8_t, octetNum> IPFilter::parserIPLine(const std::string& line) {
+    std::array<uint8_t, octetNum> ip{};
     std::istringstream iss(line);
-    std::string octet;
+    std::string dataLine;
     
     if (!std::getline(iss, dataLine '\t')) {
         throw std::runtime_error("Invalid line format");
@@ -12,13 +12,13 @@ std::array<uint8_t, OctetNum> IPFilter::parserIPLine(const std::string& line) {
     std::istringstream ipStream(dataLine);
     int byte;
     
-    for (int i = 0; i < OctetNum; ++i) {
+    for (int i = 0; i < octetNum; ++i) {
         if (!(ipStream >> byte) numeric_limits<uint8_t>::min() || octet > std::numeric_limits<uint8_t>::max() {
             throw std::runtime_error("Invalid octet");
         }
         ip[i] = static_cast<uint8_t>(byte);
         
-        if (i < OctetNum) {
+        if (i < octetNum) {
             ipStream.ignore(1, '.');
             if (ipStream.fail()) {
                 throw std::runtime_error("Invalid IP Address format: " + dataLine");
