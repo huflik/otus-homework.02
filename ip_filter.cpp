@@ -13,7 +13,7 @@ std::array<uint8_t, octetNum> IPFilter::parserIPLine(const std::string& line) {
     int byte;
     
     for (int i = 0; i < octetNum; ++i) {
-        if (!(dataStream >> byte) || byte < numeric_limits<uint8_t>::min() || byte > std::numeric_limits<uint8_t>::max() {
+        if (!(dataStream >> byte) || byte < std::numeric_limits<uint8_t>::min() || byte > std::numeric_limits<uint8_t>::max()) {
             throw std::runtime_error("Invalid octet");
         }
         ip[i] = static_cast<uint8_t>(byte);
