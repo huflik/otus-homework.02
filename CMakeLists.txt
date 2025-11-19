@@ -34,7 +34,7 @@ if(BUILD_TESTS)
     
     if(GTest_FOUND)
         add_executable(ip_filter_tests
-            ip_filter_test.cpp
+            test_ip_filter.cpp
             ip_filter.cpp
             ip_filter.h
         )
