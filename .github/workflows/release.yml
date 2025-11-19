@@ -3,7 +3,7 @@ name: 'C++ CI'
 on:
   push:
     branches:
-      - v2.1
+      - master
       - feature/github_actions
 
 jobs:
@@ -49,7 +49,7 @@ jobs:
         run: cmake --build build --target package
 
       - name: Create Release
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/v2.1' || github.ref == 'refs/heads/feature/github_actions')
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/feature/github_actions')
         id: create_release
         uses: actions/create-release@v1
         env:
