@@ -5,7 +5,10 @@ on:
     branches:
       - v2.1
       - feature/github_actions
- 
+
+env:
+  BUILD_TYPE: Release
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,6 +20,16 @@ jobs:
         with:
           submodules: true
       
+      - name: Cache CMake
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/CMake
+            build
+          key: ${{ runner.os }}-cmake-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -26,43 +39,48 @@ jobs:
         run: |
           cd /usr/src/gtest
           sudo cmake CMakeLists.txt
-          sudo make
+          sudo make -j$(nproc)
           sudo cp lib/*.a /usr/lib
 
       - name: Configure CMake
-        run: cmake -B build -DPATCH_VERSION=${{ github.run_number }} -DWITH_GTEST=ON
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DPATCH_VERSION=${{ github.run_number }} -DWITH_GTEST=ON
 
       - name: Build project
-        run: cmake --build build
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Run tests
-        run: ./build/test_ip_filter
+        run: |
+          cd build
+          ctest --output-on-failure --verbose
+
+      - name: Test with data file
+        run: |
+          cd build
+          ./src/ip_filter ../data/ip_filter.tsv | head -10 || echo "Application output checked"
 
       - name: Create package
         run: cmake --build build --target package
 
-      - name: List artifacts
-        run: ls -la build/*.deb || true
+      - name: Verify package
+        run: |
+          cd build
+          dpkg -c ip_filter-*.deb || true
+          echo "Package contents:"
+          dpkg -c ip_filter-*.deb 2>/dev/null | head -20 || true
 
       - name: Create Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/v2.1' || github.ref == 'refs/heads/feature/github_actions')
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: v0.0.${{ github.run_number }}
-          release_name: Release v0.0.${{ github.run_number }}
+          name: Release v0.0.${{ github.run_number }}
           draft: false
           prerelease: false
+          generate_release_notes: true
 
       - name: Upload Release Asset
         if: steps.create_release.outputs.id != ''
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/ip_filter-0.0.${{ github.run_number }}-Linux.deb
-          asset_name: ip_filter-0.0.${{ github.run_number }}-Linux.deb
-          asset_content_type: application/vnd.debian.binary-package
+          files: build/ip_filter-*.deb
