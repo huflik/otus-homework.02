@@ -57,6 +57,6 @@ class IPFilter{
         
     private: 
 
-        std::array<uint8_t, OctetNum> parserIPLine(const std::string& line);
+        std::array<uint8_t, octetNum> parserIPLine(const std::string& line);
     
 };
