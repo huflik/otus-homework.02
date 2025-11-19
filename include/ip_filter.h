@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <array>
@@ -20,7 +22,7 @@ class IPFilter{
        
         IPFilter() = default;
         ~IPFilter() = default;
-        IPAddrPool getIPAddr(const std::string& filename);
+        IPAddrPool getIPAddr(std::istream& input);
         void reverseSort(IPAddrPool& ipPool);
         void out(const IPAddrPool& ipPool);
         IPAddrPool filterAny(const IPAddrPool& ipPool, uint8_t searchIP);
@@ -57,6 +59,6 @@ class IPFilter{
         
     private: 
 
-        std::vector<std::string> split(const std::string &str, char d);
+        std::array<uint8_t, octetNum> parserIPLine(const std::string& line);
     
 };

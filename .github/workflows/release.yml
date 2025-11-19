@@ -3,7 +3,7 @@ name: 'C++ CI'
 on:
   push:
     branches:
-      - master
+      - v2.1
       - feature/github_actions
 
 jobs:
@@ -11,45 +11,62 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      #--------------
-
+      
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake build-essential libgtest-dev
 
-      - run: |
-          # Компилируем и устанавливаем GTest
+      - name: Build and install GTest
+        run: |
           cd /usr/src/gtest
           sudo cmake CMakeLists.txt
           sudo make
           sudo cp lib/*.a /usr/lib
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }} -DWITH_GTEST=ON 
-      #----------------------------
-      - run: cmake --build .
-      - run: cmake --build . --target test
-      - run: cmake --build . --target package
+
+      - name: Configure CMake
+        run: cmake -B build -DPATCH_VERSION=${{ github.run_number }} -DWITH_GTEST=ON
+
+      - name: Build project
+        run: cmake --build build
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest --verbose
+
+      - name: Run main application
+        run: |
+          cd build
+          ./src/ip_filter ../data/ip_filter.tsv | head -5
+
+      - name: Create package
+        run: cmake --build build --target package
+
       - name: Create Release
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/v2.1' || github.ref == 'refs/heads/feature/github_actions')
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.run_number }}
-          release_name: Release ${{ github.run_number }}
+          tag_name: v0.0.${{ github.run_number }}
+          release_name: Release v0.0.${{ github.run_number }}
           draft: false
           prerelease: false
+
       - name: Upload Release Asset
-        id: upload-release-asset
+        if: steps.create_release.outputs.id != ''
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./ip_filter-0.0.${{ github.run_number }}-Linux.deb
+          asset_path: ./build/ip_filter-0.0.${{ github.run_number }}-Linux.deb
           asset_name: ip_filter-0.0.${{ github.run_number }}-Linux.deb
           asset_content_type: application/vnd.debian.binary-package

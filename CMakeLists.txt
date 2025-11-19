@@ -1,69 +1,47 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
-set(PROJECT_VESRION 0.0.${PATCH_VERSION})
+set(PROJECT_VERSION 0.0.${PATCH_VERSION})
 
-project(ip_filter VERSION ${PROJECT_VESRION})
+project(ip_filter VERSION ${PROJECT_VERSION})
 
-option(WITH_GTEST "Whether to build Google Test" ON) 
+option(WITH_GTEST "Whether to build Google Test" ON)
+option(BUILD_TESTING "Build tests" ${WITH_GTEST})
 
-add_executable(${PROJECT_NAME} 
-    main.cpp
-    cin_redirect.cpp
-    ip_filter.cpp
-)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-)
-
-
-if(WITH_GTEST)
-
-    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt")
-        message(STATUS "Downloading googletest...")
-        execute_process(
-            COMMAND git clone --depth 1 https://github.com/google/googletest.git -b v1.17.0
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            RESULT_VARIABLE result
-        )
-        if(NOT result EQUAL 0)
-            message(FATAL_ERROR "Failed to download googletest")
-        endif()
-    endif()
-    
-    add_subdirectory(googletest)
-    
-    message(STATUS "Google Test configured via add_subdirectory")
-    
-    add_executable(test_ip_filter 
-        test_ip_filter.cpp
-        ip_filter.cpp           
-        cin_redirect.cpp        
-    )
-    
-    set_target_properties(test_ip_filter PROPERTIES
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED ON
-    )
-    
-    target_include_directories(test_ip_filter PRIVATE ${GTEST_INCLUDE_DIR})
-   
-    target_link_libraries(test_ip_filter gtest_main)
-
+if(MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-install(TARGETS ip_filter RUNTIME DESTINATION bin)
+add_library(ip_filter_lib STATIC
+    src/ip_filter.cpp
+)
 
-set(CPACK_GENERATOR DEB)
-set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
-set(CPACK_PACKAGE_CONTACT oflika256@gmail.com)
+target_include_directories(ip_filter_lib 
+    PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+add_executable(ip_filter
+    src/main.cpp
+)
+
+target_link_libraries(ip_filter ip_filter_lib)
+
+add_subdirectory(test)
+
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_VENDOR "oflika256")
+set(CPACK_PACKAGE_CONTACT "oflika256@gmail.com")
+set(CPACK_PACKAGE_VERSION_MAJOR 0)
+set(CPACK_PACKAGE_VERSION_MINOR 0)
+set(CPACK_PACKAGE_VERSION_PATCH ${PATCH_VERSION})
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "oflika256 <oflika256@gmail.com>")
+
 include(CPack)
-
-if(WITH_GTEST)
-    enable_testing()
-    add_test(test_ip_filter test_ip_filter)
-endif()
