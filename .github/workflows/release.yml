@@ -45,7 +45,7 @@ jobs:
         run: ls -la build/*.deb || true
 
       - name: Create Release
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/feature/github_actions')
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/v2.1' || github.ref == 'refs/heads/feature/github_actions')
         id: create_release
         uses: actions/create-release@v1
         env:
