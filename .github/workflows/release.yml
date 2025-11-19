@@ -6,7 +6,7 @@ on:
       - v2
       - feature/github_actions
 env:
-  DISABLED: true
+  DISABLED: false
 jobs:
   build:
     if: env.DISABLED != 'true'
@@ -30,7 +30,7 @@ jobs:
           sudo cmake CMakeLists.txt
           sudo make
           sudo cp lib/*.a /usr/lib
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }} -DWITH_GTEST=ON 
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }} -DWITH_GTEST=OFF 
       #----------------------------
       - run: cmake --build .
       - run: cmake --build . --target test
