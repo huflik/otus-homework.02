@@ -14,8 +14,6 @@ int main(int argc, char *argv[]) {
 
 		std::ifstream file(filename);
         auto ipPool = ipFilter.getIPAddr(file ? file : std::cin);
-		
-		auto ipPool = ipFilter.getIPAddr(filename);
 		ipFilter.reverseSort(ipPool);
 		ipFilter.out(ipPool);
 		ipFilter.out(ipFilter.filter(ipPool,1));
