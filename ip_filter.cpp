@@ -17,8 +17,8 @@ std::array<uint8_t, octetNum> IPFilter::parserIPLine(const std::string& line) {
             throw std::runtime_error("Invalid octet");
         }
         ip[i] = static_cast<uint8_t>(byte);
-        
-        if (i < octetNum) {
+    
+        if (i < octetNum - 1) {
             dataStream.ignore(1, '.');
             if (dataStream.fail()) {
                 throw std::runtime_error("Invalid IP Address format: " + dataLine);
