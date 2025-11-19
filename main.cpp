@@ -1,4 +1,5 @@
 #include "ip_filter.h"
+#include <fstream>
 
 constexpr const char *defaultFilename = "./../ip_filter.tsv";
 
